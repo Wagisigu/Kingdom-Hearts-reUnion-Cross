@@ -3,7 +3,7 @@ using UnityEngine;
 public class Keyblade : MonoBehaviour
 {
     public GameObject player;
-    public GameObject target;
+    private GameObject[] targets;
     public float enemeyHealth;
     public float[] medals;
     public TMPro.TextMeshProUGUI healthText;
@@ -27,15 +27,15 @@ public class Keyblade : MonoBehaviour
         Debug.Log($"Enemy has {enemeyHealth} remaining"); 
         
         int tempCount = PlayerPrefs.GetInt("enemyCount");
-        Vector3[] tempVectArray = new Vector3[tempCount];
+        targets = new GameObject[tempCount];
         for (int i = 0; i < tempCount; i++)
         {
             Vector3 tempVect = new Vector3(0f, 0f, 0f);
             tempVect.x = PlayerPrefs.GetFloat("enemyX" + i);
             tempVect.y = PlayerPrefs.GetFloat("enemyY" + i);
-            tempVectArray[i] = tempVect;
+            targets[i] = Instantiate(enemyPrefab, tempVect, Quaternion.identity);
         }
-        foreach (Vector3 v in tempVectArray) Instantiate(enemyPrefab, v, Quaternion.identity);
+        healthText = targets[0].GetComponentInChildren<TMPro.TextMeshProUGUI>();
     }
 
     // Update is called once per frame
@@ -73,7 +73,17 @@ public class Keyblade : MonoBehaviour
                 player.transform.Translate(new Vector3(-3f, 0f, 0f));
                 if (slain)
                 {
-                    UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+                    if (targets.Length == 1) UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+                    else
+                    {
+                        GameObject[] tempArray = new GameObject[targets.Length - 1];
+                        System.Array.Copy(targets, 1, tempArray, 0, targets.Length - 1);
+                        Destroy(targets[0]);
+                        targets = tempArray;
+                        healthText = targets[0].GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                        slain = false;
+                        enemeyHealth = 10;
+                    }
                 }
             }
         }
