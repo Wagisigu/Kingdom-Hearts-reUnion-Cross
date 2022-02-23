@@ -7,6 +7,7 @@ public class Keyblade : MonoBehaviour
     public float enemeyHealth;
     public float[] medals;
     public TMPro.TextMeshProUGUI healthText;
+    public GameObject enemyPrefab;
 
     private bool spin;
     private float lastZAngle;
@@ -23,7 +24,18 @@ public class Keyblade : MonoBehaviour
         currentZAngle = 45f;
         medalNum = 0;
         a = 255f;
-        Debug.Log($"Enemy has {enemeyHealth} remaining");
+        Debug.Log($"Enemy has {enemeyHealth} remaining"); 
+        
+        int tempCount = PlayerPrefs.GetInt("enemyCount");
+        Vector3[] tempVectArray = new Vector3[tempCount];
+        for (int i = 0; i < tempCount; i++)
+        {
+            Vector3 tempVect = new Vector3(0f, 0f, 0f);
+            tempVect.x = PlayerPrefs.GetFloat("enemyX" + i);
+            tempVect.y = PlayerPrefs.GetFloat("enemyY" + i);
+            tempVectArray[i] = tempVect;
+        }
+        foreach (Vector3 v in tempVectArray) Instantiate(enemyPrefab, v, Quaternion.identity);
     }
 
     // Update is called once per frame
@@ -35,7 +47,7 @@ public class Keyblade : MonoBehaviour
             a = 255f;
             enemeyHealth -= medals[medalNum];
             healthText.color = new Color(255f, 0f, 0f, 255f);
-            healthText.transform.localPosition = new Vector3(230f, 30f, 0f);
+            healthText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
             healthText.text = $"-{medals[medalNum]}";
             if (enemeyHealth > 0) Debug.Log($"Enemy has {enemeyHealth} remaining");
             else
@@ -67,7 +79,7 @@ public class Keyblade : MonoBehaviour
         }
         if (a > 0f)
         {
-            healthText.transform.Translate(0f, 25f * Time.deltaTime, 0f);
+            healthText.transform.Translate(0f, 1f * Time.deltaTime, 0f);
             healthText.color = Color.Lerp(healthText.color, new Color(255f, 0f, 0f, 0f), 5f * Time.deltaTime);
             a = healthText.color.a;
         }

@@ -54,6 +54,13 @@ public class Move : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        int tempCount = other.GetComponentInParent<Enemy>().count;
+        PlayerPrefs.SetInt("enemyCount", tempCount);
+        for (int i = 0; i < tempCount; i++)
+        {
+            PlayerPrefs.SetFloat("enemyX" + i, other.GetComponentInParent<Enemy>().positions[i].x);
+            PlayerPrefs.SetFloat("enemyY" + i, other.GetComponentInParent<Enemy>().positions[i].y);
+        }
         SceneManager.LoadScene(1);
     }
 }
