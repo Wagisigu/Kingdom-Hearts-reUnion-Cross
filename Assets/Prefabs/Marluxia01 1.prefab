@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 8406851392768051456}
   - component: {fileID: 253106619612358250}
   - component: {fileID: 7750669647698857200}
-  - component: {fileID: 7750669647698857165}
   - component: {fileID: 7750669647698857164}
+  - component: {fileID: 5529578077290732266}
   m_Layer: 0
   m_Name: Marluxia01 1
   m_TagString: Untagged
@@ -99,39 +99,13 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!61 &7750669647698857165
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1940894966331921928}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -2.2266402}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.27, y: 5.17}
-    newSize: {x: 2.27, y: 5.17}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.5, y: 1}
-  m_EdgeRadius: 0
+  m_Constraints: 4
 --- !u!114 &7750669647698857164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,3 +118,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7a6fc6cb1ce1e0448b212ae487e85cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movementFilter:
+    useTriggers: 0
+    useLayerMask: 0
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
+--- !u!58 &5529578077290732266
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940894966331921928}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: -2.25}
+  serializedVersion: 2
+  m_Radius: 0.72

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Keyblade : MonoBehaviour
 {
@@ -6,10 +7,10 @@ public class Keyblade : MonoBehaviour
     public float enemeyHealth;
     public float[] medals;
     public TMPro.TextMeshProUGUI healthText;
-    public System.Collections.Generic.List<TMPro.TextMeshProUGUI> healthTexts;
+    public List<TMPro.TextMeshProUGUI> healthTexts;
     public GameObject enemyPrefab;
 
-    private System.Collections.Generic.List<GameObject> targets;
+    private List<GameObject> targets;
     private GameObject target;
     private bool spin;
     private float lastZAngle;

@@ -1,54 +1,57 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Move : MonoBehaviour
 {
-    private Vector3 moveTo;
-    private Vector3 playerYOffset;
+    public ContactFilter2D movementFilter;
+
+    private Vector2 moveTo;
+    private Vector2 playerYOffset;
+    private Vector2 lastPosition;
     private bool move;
+    private Rigidbody2D rb;
+    private float moveSpeed = 5.0f;
+
+    private List<RaycastHit2D> castCollsions = new List<RaycastHit2D>();
     // Start is called before the first frame update
     void Start()
     {
-        playerYOffset = new Vector3(0.0f, ((BoxCollider2D)gameObject.GetComponent("BoxCollider2D")).offset.y, 0.0f);
-        moveTo = transform.position + playerYOffset * 0.5f;
-        move = 0 == SceneManager.GetActiveScene().buildIndex;
+        rb = gameObject.GetComponent<Rigidbody2D>();
+        playerYOffset = new Vector2(0.0f, ((CircleCollider2D)gameObject.GetComponent("CircleCollider2D")).offset.y)*0.5f;
+        moveTo = rb.position + playerYOffset;
+        lastPosition = moveTo;
+        move = false;
+    }
+
+    void Update()
+    {
+        //if (Input.touchCount > 0)
+        if (Input.GetMouseButtonDown(0))
+        {
+            //Touch touch = Input.GetTouch(0);
+            //Vector2 pos = touch.position;
+            Vector3 pos = Input.mousePosition;
+            pos = Camera.main.ScreenToWorldPoint(pos);
+            pos.z = 0;
+            moveTo = new Vector2(pos.x, pos.y);
+            move = true;
+        }
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (move) {
-            //if (Input.touchCount > 0)
-            if (Input.GetMouseButtonDown(0))
-            {
-                //Touch touch = Input.GetTouch(0);
-                //Vector2 pos = touch.position;
-                Vector3 pos = Input.mousePosition;
-                pos = UnityEngine.Camera.main.ScreenToWorldPoint(pos);
-                pos.z = 0;
-                moveTo = new Vector3(pos.x, pos.y, 0.0f);
-            }
-            transform.position = Vector2.MoveTowards(transform.position, moveTo + new Vector3(0f, GetComponent<Renderer>().bounds.size.y * 2 / 5, 0f), 3.0f * Time.deltaTime);
-            if (Vector3.Distance(transform.position, moveTo) < 0.001f)
+        if (move)
+        {
+            Debug.Log("x");
+            moveCharacter(((moveTo - playerYOffset) - rb.position));
+            if (Vector2.Distance(rb.position, moveTo - playerYOffset) < 0.01f)
             {
                 // Swap the position of the cylinder.
-                moveTo = transform.position;
+                move = false;
             }
-        }
-    }
-
-    void OnCollisionEnter2D(Collision2D other)
-    {
-        if (Mathf.Abs(transform.position.x - moveTo.x) < 0.001f)
-        {
-            moveTo = transform.position - playerYOffset;
-        }
-    }
-    void OnCollisionStay2D(Collision2D other)
-    {
-        if (Mathf.Abs(transform.position.x - moveTo.x) < 0.001f)
-        {
-            moveTo = transform.position - playerYOffset;
         }
     }
 
@@ -62,5 +65,25 @@ public class Move : MonoBehaviour
             PlayerPrefs.SetFloat("enemyY" + i, other.GetComponentInParent<Enemy>().positions[i].y);
         }
         SceneManager.LoadScene(1);
+    }
+
+    private bool moveCharacter(Vector2 distance)
+    {
+        Vector2 direction = distance.normalized;
+        int count = rb.Cast(
+            direction,
+            movementFilter,
+            castCollsions,
+            moveSpeed * Time.fixedDeltaTime * 0.05f);
+
+        if (count == 0)
+        {
+            Vector2 movementVector = direction * moveSpeed * Time.fixedDeltaTime;
+            if (distance.magnitude < movementVector.magnitude) movementVector = distance;
+
+            rb.MovePosition(rb.position + movementVector);
+            return true;
+        }
+        return false;
     }
 }
