@@ -5,15 +5,15 @@ using UnityEngine.EventSystems;
 
 public class EnemyFight : MonoBehaviour, IPointerClickHandler
 {
+    public float strength = 1f;
 
     private Keyblade keyblade;
-    private float health;
+    private float health = 10f;
 
     // Start is called before the first frame update
     void Start()
     {
         keyblade = GameObject.FindObjectOfType<Keyblade>();
-        health = 10;
     }
 
     // Update is called once per frame

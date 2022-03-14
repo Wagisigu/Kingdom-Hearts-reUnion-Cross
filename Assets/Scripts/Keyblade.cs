@@ -4,33 +4,37 @@ using System.Collections.Generic;
 public class Keyblade : MonoBehaviour
 {
     public GameObject player;
-    public float enemeyHealth;
     public float[] medals;
     public TMPro.TextMeshProUGUI healthText;
     public List<TMPro.TextMeshProUGUI> healthTexts;
     public GameObject enemyPrefab;
+    public float playerHealth;
 
     private List<GameObject> targets;
     private GameObject target;
-    private bool spin;
-    private float lastZAngle;
-    private float currentZAngle;
-    private int medalNum;
-    private bool slain;
+    private bool spin = false;
+    private float lastZAngle = 45f;
+    private float currentZAngle = 45f;
+    private int medalNum = 0;
+    private bool slain = false;
     private EnemyFight e;
+    private Vector2 defaultPos;
+    private Vector2 enemyAttackPos;
+    private bool playerTurnOver = false;
+    private int attackingEnemy = 0;
+    private bool enemyHasStriked = false;
+    private float sinceStrikeStarted;
+    private Vector2 lastEnemyPos;
+    private float enemyHealth;
     // Start is called before the first frame update
     void Start()
     {
-        healthTexts = new System.Collections.Generic.List<TMPro.TextMeshProUGUI>();
-        spin = false;
-        slain = false;
-        lastZAngle = 45f;
-        currentZAngle = 45f;
-        medalNum = 0;
-        Debug.Log($"Enemy has {enemeyHealth} remaining"); 
+        healthTexts = new List<TMPro.TextMeshProUGUI>();
+        defaultPos = player.transform.position;
+        enemyAttackPos = defaultPos + new Vector2(3f, 0f);
         
         int tempCount = PlayerPrefs.GetInt("enemyCount");
-        targets = new System.Collections.Generic.List<GameObject>();
+        targets = new List<GameObject>();
         for (int i = 0; i < tempCount; i++)
         {
             Vector3 tempVect = new Vector3(0f, 0f, 0f);
@@ -43,59 +47,93 @@ public class Keyblade : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonUp(0) && !spin)
+        if (playerTurnOver)
         {
-            spin = true;
-            if (e == null)
+            if (!enemyHasStriked)
             {
-                EnemyFight ef = targets[0].GetComponent<EnemyFight>();
-                enemeyHealth = ef.Hit(medals[medalNum]);
-                target = targets[0];
+                float hitStrength = targets[attackingEnemy].GetComponent<EnemyFight>().strength;
+                playerHealth -= hitStrength;
+                Debug.Log($"Player has {playerHealth} remaining");
+                healthText = player.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                healthText.color = new Color(255f, 0f, 0f, 255f);
+                healthText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+                healthText.text = $"-{hitStrength}";
+                healthTexts.Add(healthText);
+                sinceStrikeStarted = 0;
+                enemyHasStriked = true;
+                lastEnemyPos = targets[attackingEnemy].transform.position;
+                targets[attackingEnemy].transform.position = enemyAttackPos;
+
             }
             else
             {
-                enemeyHealth = e.Hit(medals[medalNum]);
-                target = e.gameObject;
-            }
-            healthText = target.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            healthText.color = new Color(255f, 0f, 0f, 255f);
-            healthText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
-            healthText.text = $"-{medals[medalNum]}";
-            if (enemeyHealth > 0) Debug.Log($"Enemy has {enemeyHealth} remaining");
-            else
-            {
-                Debug.Log("Enemy slain");
-                slain = true;
-            }
-            medalNum = (medalNum + 1) % 5;
-            player.transform.Translate(new Vector3(3f, 0f, 0f));
-            healthTexts.Add(healthText);
-        }
-        if (spin)
-        {
-            float rot = -90f * Time.deltaTime;
-            currentZAngle += rot;
-            transform.Rotate(0f, 0f, rot, Space.Self);
-            if (Mathf.Abs(lastZAngle-currentZAngle)>=72f)
-            {
-                spin = false;
-                transform.Rotate(0f, 0f, (Mathf.Abs(lastZAngle - currentZAngle) - 72));
-                currentZAngle %= 360;
-                lastZAngle = currentZAngle;
-                player.transform.Translate(new Vector3(-3f, 0f, 0f));
-                if (slain)
+                sinceStrikeStarted += Time.deltaTime;
+                if (sinceStrikeStarted >= 2)
                 {
-                    if (targets.Count == 1) UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+                    targets[attackingEnemy].transform.position = lastEnemyPos;
+                    enemyHasStriked = false;
+                    if (attackingEnemy == targets.Count - 1)
+                    {
+                        attackingEnemy = 0;
+                        playerTurnOver = false;
+                    }
                     else
                     {
-                        target.gameObject.layer--;
-                        target.gameObject.GetComponent<Renderer>().enabled = false;
-                        targets.Remove(target);
-                        slain = false;
+                        attackingEnemy++;
                     }
                 }
             }
-            e = null;
+        }
+        else
+        {
+            if (Input.GetMouseButtonUp(0) && !spin)
+            {
+                spin = true;
+                if (e == null) e = targets[0].GetComponent<EnemyFight>();
+                enemyHealth = e.Hit(medals[medalNum]);
+                target = e.gameObject;
+                healthText = target.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                healthText.color = new Color(255f, 0f, 0f, 255f);
+                healthText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+                healthText.text = $"-{medals[medalNum]}";
+                if (enemyHealth > 0) Debug.Log($"Enemy has {enemyHealth} remaining");
+                else
+                {
+                    Debug.Log("Enemy slain");
+                    slain = true;
+                }
+                medalNum = (medalNum + 1) % 5;
+                player.transform.position = e.gameObject.transform.position;
+                player.transform.Translate(new Vector3(-1f, 0f, 0f));
+                healthTexts.Add(healthText);
+            }
+            if (spin)
+            {
+                float rot = -90f * Time.deltaTime;
+                currentZAngle += rot;
+                transform.Rotate(0f, 0f, rot, Space.Self);
+                if (Mathf.Abs(lastZAngle - currentZAngle) >= 72f)
+                {
+                    playerTurnOver = medalNum == 4;
+                    spin = false;
+                    transform.Rotate(0f, 0f, (Mathf.Abs(lastZAngle - currentZAngle) - 72));
+                    currentZAngle %= 360;
+                    lastZAngle = currentZAngle;
+                    player.transform.position = defaultPos;
+                    if (slain)
+                    {
+                        if (targets.Count == 1) UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+                        else
+                        {
+                            target.gameObject.layer--;
+                            target.gameObject.GetComponent<Renderer>().enabled = false;
+                            targets.Remove(target);
+                            slain = false;
+                        }
+                    }
+                }
+                e = null;
+            }
         }
         for (int i = healthTexts.Count - 1; i >= 0; i--)
         {

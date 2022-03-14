@@ -40,7 +40,6 @@ public class Move : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         if (move)
