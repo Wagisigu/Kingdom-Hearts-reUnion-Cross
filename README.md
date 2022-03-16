@@ -1,4 +1,3 @@
-# Kingdom-Hearts-reUnion-Cross
+# X
 
-This is a project to rebuild Kingdom Hearts Union Cross mobile game by Square Enix.  
-Currently focusing on funtionality, as I have no expertise in graphic design to create good assets.
+2D Mobile Game Attempt
