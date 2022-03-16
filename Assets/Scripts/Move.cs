@@ -7,22 +7,19 @@ public class Move : MonoBehaviour
 {
     public ContactFilter2D movementFilter;
 
+    private Animator animator;
     private Vector2 moveTo;
-    private Vector2 playerYOffset;
-    private Vector2 lastPosition;
-    private bool move;
+    private bool move = false;
     private Rigidbody2D rb;
-    private float moveSpeed = 5.0f;
+    private float moveSpeed = 2.0f;
 
     private List<RaycastHit2D> castCollsions = new List<RaycastHit2D>();
     // Start is called before the first frame update
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody2D>();
-        playerYOffset = new Vector2(0.0f, ((CircleCollider2D)gameObject.GetComponent("CircleCollider2D")).offset.y)*0.5f;
-        moveTo = rb.position + playerYOffset;
-        lastPosition = moveTo;
-        move = false;
+        moveTo = rb.position;
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -37,6 +34,9 @@ public class Move : MonoBehaviour
             pos.z = 0;
             moveTo = new Vector2(pos.x, pos.y);
             move = true;
+            animator.SetBool("isWalking", true);
+            if (moveTo.x - rb.position.x > 0) transform.localScale = new Vector3(-1, 1, 1);
+            else transform.localScale = new Vector3(1, 1, 1);
         }
     }
 
@@ -44,12 +44,12 @@ public class Move : MonoBehaviour
     {
         if (move)
         {
-            Debug.Log("x");
-            moveCharacter(((moveTo - playerYOffset) - rb.position));
-            if (Vector2.Distance(rb.position, moveTo - playerYOffset) < 0.01f)
+            moveCharacter((moveTo - rb.position));
+            if (Vector2.Distance(rb.position, moveTo) < 0.1f)
             {
                 // Swap the position of the cylinder.
                 move = false;
+                animator.SetBool("isWalking", false);
             }
         }
     }
