@@ -23,6 +23,7 @@ public class EnemyFight : MonoBehaviour, IPointerClickHandler
     }
     public void OnPointerClick(PointerEventData eventData)
     {
+        Debug.Log("click");
         keyblade.Attack(this);
     }
 

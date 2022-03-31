@@ -6,8 +6,9 @@ public class Keyblade : MonoBehaviour
     public GameObject player;
     public float[] medals;
     public TMPro.TextMeshProUGUI healthText;
-    public List<TMPro.TextMeshProUGUI> healthTexts;
+    public List<GameObject> healthTexts;
     public GameObject enemyPrefab;
+    public GameObject healthTextParent;
     public float playerHealth;
 
     private List<GameObject> targets;
@@ -29,7 +30,7 @@ public class Keyblade : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        healthTexts = new List<TMPro.TextMeshProUGUI>();
+        healthTexts = new List<GameObject>();
         defaultPos = player.transform.position;
         enemyAttackPos = defaultPos + new Vector2(3f, 0f);
         
@@ -39,7 +40,7 @@ public class Keyblade : MonoBehaviour
         {
             Vector3 tempVect = new Vector3(0f, 0f, 0f);
             tempVect.x = PlayerPrefs.GetFloat("enemyX" + i);
-            tempVect.y = PlayerPrefs.GetFloat("enemyY" + i);
+            tempVect.y = PlayerPrefs.GetFloat("enemyY" + i) - 3;
             targets.Add(Instantiate(enemyPrefab, tempVect, Quaternion.identity));
         }
     }
@@ -54,11 +55,12 @@ public class Keyblade : MonoBehaviour
                 float hitStrength = targets[attackingEnemy].GetComponent<EnemyFight>().strength;
                 playerHealth -= hitStrength;
                 Debug.Log($"Player has {playerHealth} remaining");
-                healthText = player.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                GameObject healthy = Instantiate(healthTextParent, player.transform.position, Quaternion.identity);
+                healthText = healthy.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 healthText.color = new Color(255f, 0f, 0f, 255f);
                 healthText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
                 healthText.text = $"-{hitStrength}";
-                healthTexts.Add(healthText);
+                healthTexts.Add(healthy);
                 sinceStrikeStarted = 0;
                 enemyHasStriked = true;
                 lastEnemyPos = targets[attackingEnemy].transform.position;
@@ -92,7 +94,8 @@ public class Keyblade : MonoBehaviour
                 if (e == null) e = targets[0].GetComponent<EnemyFight>();
                 enemyHealth = e.Hit(medals[medalNum]);
                 target = e.gameObject;
-                healthText = target.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                GameObject healthy = Instantiate(healthTextParent, e.gameObject.transform.position, Quaternion.identity);
+                healthText = healthy.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 healthText.color = new Color(255f, 0f, 0f, 255f);
                 healthText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
                 healthText.text = $"-{medals[medalNum]}";
@@ -105,7 +108,7 @@ public class Keyblade : MonoBehaviour
                 medalNum = (medalNum + 1) % 5;
                 player.transform.position = e.gameObject.transform.position;
                 player.transform.Translate(new Vector3(-1f, 0f, 0f));
-                healthTexts.Add(healthText);
+                healthTexts.Add(healthy);
             }
             if (spin)
             {
@@ -125,8 +128,12 @@ public class Keyblade : MonoBehaviour
                         if (targets.Count == 1) UnityEngine.SceneManagement.SceneManager.LoadScene(0);
                         else
                         {
-                            target.gameObject.layer--;
-                            target.gameObject.GetComponent<Renderer>().enabled = false;
+                            //target.layer--;
+                            foreach (Renderer r in target.GetComponentsInChildren<Renderer>())
+                            {
+                                r.enabled = false;
+                            }
+                            target.GetComponentInChildren<Renderer>().enabled = false;
                             targets.Remove(target);
                             slain = false;
                         }
@@ -137,13 +144,13 @@ public class Keyblade : MonoBehaviour
         }
         for (int i = healthTexts.Count - 1; i >= 0; i--)
         {
-            healthText = healthTexts[i];
+            healthText = healthTexts[i].GetComponentInChildren<TMPro.TextMeshProUGUI>();
             healthText.transform.Translate(0f, 0.3f * Time.deltaTime, 0f);
             healthText.color = Color.Lerp(healthText.color, new Color(255f, 0f, 0f, 0f), 2f * Time.deltaTime);
-            if (healthText.color.a <= 0)
+            if (healthText.color.a <= 0.1)
             {
                 healthTexts.RemoveAt(i);
-                Destroy(healthText.gameObject);
+                Destroy(healthText.transform.parent.gameObject);
             }
         }
     }
